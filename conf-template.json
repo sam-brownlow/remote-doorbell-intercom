@@ -1,0 +1,8 @@
+{
+  "TWILIO_ACCOUNT_SID": "< supply the value for your twilio account's SID >",
+  "TWILIO_AUTH_TOKEN": "< supply the value for your twilio account's auth token >",
+  "TWILIO_FROM_NUMBER": "< supply the value for your twilio account's outbound phone number >",
+  "FLASK_SECRET_KEY": "< supply a flask secret key, randomly generated from os.urandom(32).hex() >",
+  "SWITCHBOT_MAC_ANSWER_BELL": "< supply the MAC address of the switchbot that answers the bell >",
+  "SWITCHBOT_MAC_UNLOCK_DOOR": "< supply the MAC address of the switchbot that unlocks the door >"
+}
