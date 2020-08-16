@@ -32,6 +32,7 @@ def main(*, conf_path, log_level, door_bell_detector, audio_file_path=None):
   
   doorbell_detector_class = getattr(door_bell_detectors, door_bell_detector)
   doorbell_detector_instance = doorbell_detector_class(audio_stream=audio_stream)
+  logging.info('Listening via doorbell detector of {}'.format(doorbell_detector_instance))
   
   if doorbell_detector_instance.is_ringing():
     print('the doorbell is ringing')

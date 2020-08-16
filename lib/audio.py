@@ -22,7 +22,7 @@ class Stream(ABC):
     self,
     *,
     sample_rate=44100,
-    block_size=1024,
+    block_size=512,
     num_channels=1,
   ):
     self.sample_rate = sample_rate
@@ -150,7 +150,7 @@ class Microphone(Stream):
     return (
       '{}(\n'
         '\t{},\n'
-        '\tdtype={},\n'
+        '\tdtype={}\n'
       ')'
       ''.format(
         Microphone.__name__,
@@ -203,7 +203,7 @@ class File(Stream):
     return (
       '{}(\n'
         '\t{},\n'
-        "\tfile_path='{}',\n"
+        "\tfile_path='{}'\n"
       ')._last_read_size={}'
       ''.format(
         File.__name__,
@@ -246,7 +246,7 @@ class Pitch:
     *,
     model='yin',
     tolerance=0.8,
-    block_size_multiple=0.5,
+    block_size_multiple=8,
   ):
     self.audio_stream = audio_stream
     self.model = model
@@ -264,10 +264,10 @@ class Pitch:
         '\ttolerance={},\n'
         '\tblock_size_multiple={}\n'
       ')._aubio_pitch={},\n'
-      '._cached_confidence={},\n'
+      '._cached_confidence={}'
       ''.format(
         Pitch.__name__,
-        self.audio_stream,
+        str(self.audio_stream).replace('\n', '\n\t'),
         self.model,
         self.tolerance,
         self.block_size_multiple,
@@ -283,9 +283,8 @@ class Pitch:
   def open(self):
     self._aubio_pitch = aubio.pitch(
       method=self.model,
-      #hop_size=int(self.audio_stream.block_size * self.block_size_multiple),
+      buf_size=self.audio_stream.block_size * self.block_size_multiple,
       hop_size=self.audio_stream.block_size,
-      buf_size=self.audio_stream.block_size,
       samplerate=self.audio_stream.sample_rate
     )
     self._aubio_pitch.set_tolerance(self.tolerance)
