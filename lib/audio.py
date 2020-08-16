@@ -1,4 +1,10 @@
 from abc import ABC, abstractmethod
+import logging
+from pathlib import Path
+import os
+import runpy
+import sys
+import warnings
 
 import aubio
 import sounddevice
@@ -231,3 +237,51 @@ class Pitch:
     
     return cached_confidence
 
+
+def _ensure_aubio_demos_in_path():
+  aubio_demos_path = os.path.join(
+    Path().absolute(),
+    'submodules/aubio/python/demos'
+  )
+  
+  if aubio_demos_path not in sys.path:
+    assert os.path.isdir(aubio_demos_path), (
+      "There is no directory at '{}'\n"
+      'Be sure you ran `git submodule init && git submodule update`'
+      ''.format(aubio_demos_path)
+    )
+  
+    sys.path.append(aubio_demos_path)
+
+
+def plot_audio_file_pitch_confidence(file_path, sample_rate):
+  """
+    Uses matplotlib, via aubio's `demo_pitch.py`,
+    to plot an audio file's pitch confidence over time
+  """
+  
+  argv_bak = sys.argv
+  sys.argv = [
+    argv_bak[0],
+    file_path,
+    sample_rate,
+  ]
+
+  try:
+    exit_bak = sys.exit
+    sys.exit = lambda *args, **kwargs: logging.debug('Intercepted sys.exit(*{}, **{})'.format(args, kwargs))
+    
+    try:
+      with warnings.catch_warnings():
+        _ensure_aubio_demos_in_path()
+        warnings.filterwarnings('ignore', category=UserWarning)
+
+        runpy.run_module(
+          'demo_pitch',
+          run_name='__main__',
+          alter_sys=True,
+        )
+    finally:
+      sys.exit = exit_bak
+  finally:
+    sys.argv = argv_bak

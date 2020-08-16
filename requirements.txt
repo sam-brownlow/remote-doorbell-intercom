@@ -1,6 +1,7 @@
 aubio
 flask
 flask-socketio
+matplotlib
 pyngrok
 sounddevice
 switchbotpy
