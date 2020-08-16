@@ -1,3 +1,4 @@
 /conf.json
 .idea
 venv
+__pycache__

@@ -1,7 +1,7 @@
+aubio
 flask
 flask-socketio
-pexpect
-pyaudio
-pygatt
 pyngrok
+sounddevice
+switchbotpy
 twilio

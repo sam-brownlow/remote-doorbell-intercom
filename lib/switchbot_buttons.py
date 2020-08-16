@@ -17,7 +17,7 @@ def answer_doorbell():
 def unlock_door():
   bot = Bot(
     bot_id=1,
-    mac='C2:E3:8B:B2:72:A5',
+    mac=SWITCHBOT_MAC_UNLOCK_DOOR,
     name='unlock_door'
   )
   bot.press()
