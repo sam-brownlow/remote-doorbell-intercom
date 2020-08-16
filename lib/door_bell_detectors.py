@@ -190,21 +190,15 @@ class AiPhoneGT1A(DoorbellDetector):
         break
       if max_wait_time and (time.time() >= max_wait_time):
         logging.debug(
-          "_detect_single_ring(max_wait_seconds_multiple={}) timed out at {}"
-          ''.format(
-            max_wait_seconds_multiple,
-            time.time(),
-          )
+          "_detect_single_ring(max_wait_seconds_multiple={}) timed"
+          ''.format(max_wait_seconds_multiple)
         )
         ret = False
         break
     else:
       logging.debug(
-        "_detect_single_ring(max_wait_seconds_multiple={}) stream ended at {}"
-        ''.format(
-          max_wait_seconds_multiple,
-          time.time(),
-        )
+        "_detect_single_ring(max_wait_seconds_multiple={}) stream ended"
+        ''.format(max_wait_seconds_multiple)
       )
       ret = False
 
@@ -253,21 +247,15 @@ class AiPhoneGT1A(DoorbellDetector):
         break
       if max_wait_time and (time.time() >= max_wait_time):
         logging.debug(
-          "_detect_single_gap(max_wait_seconds_multiple={}) timed out at {}"
-          ''.format(
-            max_wait_seconds_multiple,
-            time.time()
-          )
+          "_detect_single_gap(max_wait_seconds_multiple={}) timed out"
+          ''.format(max_wait_seconds_multiple)
         )
         ret = False
         break
     else:
       logging.debug(
-        "_detect_single_gap(max_wait_seconds_multiple={}) stream ended at {}"
-        ''.format(
-          max_wait_seconds_multiple,
-          time.time()
-        )
+        "_detect_single_gap(max_wait_seconds_multiple={}) stream ended"
+        ''.format(max_wait_seconds_multiple)
       )
       ret = False
 

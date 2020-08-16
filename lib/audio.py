@@ -154,7 +154,7 @@ class Microphone(Stream):
       ')'
       ''.format(
         Microphone.__name__,
-        super().__str__().replace('\t', '\t\t'),
+        super().__str__().replace('\n', '\n\t'),
         self.dtype,
       )
     )
@@ -207,7 +207,7 @@ class File(Stream):
       ')._last_read_size={}'
       ''.format(
         File.__name__,
-        super().__str__().replace('\t', '\t\t'),
+        super().__str__().replace('\n', '\n\t'),
         self.file_path,
         self._last_read_size,
       )
@@ -263,7 +263,7 @@ class Pitch:
         "\tmodel='{}',\n"
         '\ttolerance={},\n'
         '\tblock_size_multiple={}\n'
-      ')._aubio_pitch=<{}>,\n'
+      ')._aubio_pitch={},\n'
       '._cached_confidence={},\n'
       ''.format(
         Pitch.__name__,
@@ -283,7 +283,8 @@ class Pitch:
   def open(self):
     self._aubio_pitch = aubio.pitch(
       method=self.model,
-      hop_size=int(self.audio_stream.block_size * self.block_size_multiple),
+      #hop_size=int(self.audio_stream.block_size * self.block_size_multiple),
+      hop_size=self.audio_stream.block_size,
       buf_size=self.audio_stream.block_size,
       samplerate=self.audio_stream.sample_rate
     )
