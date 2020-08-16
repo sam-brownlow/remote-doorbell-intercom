@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 import logging
 from pathlib import Path
 import os
@@ -227,7 +228,8 @@ class Pitch:
   def process_data(self):
     return self._aubio_pitch(self.audio_stream.data)
   
-  def fetch_confidence(self):
+  @property
+  def confidence(self):
     cached_confidence = self._cached_confidence.get(self.audio_stream.num_blocks_read)
     if cached_confidence is None:
       cached_confidence = self._aubio_pitch.get_confidence()
@@ -238,13 +240,16 @@ class Pitch:
     return cached_confidence
 
 
-def _ensure_aubio_demos_in_path():
+@contextmanager
+def _aubio_demos_in_path():
   aubio_demos_path = os.path.join(
     Path().absolute(),
     'submodules/aubio/python/demos'
   )
   
-  if aubio_demos_path not in sys.path:
+  needs_update = aubio_demos_path not in sys.path
+  
+  if needs_update:
     assert os.path.isdir(aubio_demos_path), (
       "There is no directory at '{}'\n"
       'Be sure you ran `git submodule init && git submodule update`'
@@ -252,8 +257,14 @@ def _ensure_aubio_demos_in_path():
     )
   
     sys.path.append(aubio_demos_path)
+  
+  try:
+    yield
+  finally:
+    if needs_update:
+      sys.path.remove(aubio_demos_path)
 
-
+# plot_audio_file_pitch_confidence('/Users/sam/Desktop/buzz-cut.wav', 44100)
 def plot_audio_file_pitch_confidence(file_path, sample_rate):
   """
     Uses matplotlib, via aubio's `demo_pitch.py`,
@@ -273,14 +284,14 @@ def plot_audio_file_pitch_confidence(file_path, sample_rate):
     
     try:
       with warnings.catch_warnings():
-        _ensure_aubio_demos_in_path()
-        warnings.filterwarnings('ignore', category=UserWarning)
-
-        runpy.run_module(
-          'demo_pitch',
-          run_name='__main__',
-          alter_sys=True,
-        )
+        with _aubio_demos_in_path():
+          warnings.filterwarnings('ignore', category=UserWarning)
+  
+          runpy.run_module(
+            'demo_pitch',
+            run_name='__main__',
+            alter_sys=True,
+          )
     finally:
       sys.exit = exit_bak
   finally:

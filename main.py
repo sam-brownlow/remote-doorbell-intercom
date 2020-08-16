@@ -12,7 +12,7 @@ def main_kwargs():
   arg_parser.add_argument('-door_bell_detector', '--door_bell_detector', type=str, default='AiPhoneGT1A')
   arg_parser.add_argument('-conf_path', '--conf_path', type=str, default=os.path.join(Path().absolute(), 'conf.json'))
   arg_parser.add_argument('-log_level', '--log_level', type=str, default='INFO')
-  arg_parser.add_argument('-audio_file_path', '--audio_file_path', type=str, default=None)
+  arg_parser.add_argument('-audio_file_path', '--audio_file_path', type=str)
   
   kwargs = vars(arg_parser.parse_args())
   kwargs['log_level'] = logging._checkLevel(kwargs['log_level'].upper())
@@ -20,20 +20,20 @@ def main_kwargs():
   return kwargs
 
 
-def main(**kwargs):
-  load_conf_to_env_vars(json_path=kwargs['conf_path'])
-  configure_logging(level=kwargs['log_level'])
+def main(*, conf_path, log_level, door_bell_detector, audio_file_path=None):
+  load_conf_to_env_vars(json_path=conf_path)
+  configure_logging(level=log_level)
   
   audio_stream = (
     audio.Microphone()
-    if kwargs['audio_file_path'] is None
-    else audio.File(file_path=kwargs['audio_file_path'])
+    if audio_file_path is None
+    else audio.File(file_path=audio_file_path)
   )
   
-  doorbell_detector_class = getattr(door_bell_detectors, kwargs['door_bell_detector'])
-  doorbell_detector = doorbell_detector_class(audio_stream=audio_stream)
+  doorbell_detector_class = getattr(door_bell_detectors, door_bell_detector)
+  doorbell_detector_instance = doorbell_detector_class(audio_stream=audio_stream)
   
-  if doorbell_detector.is_ringing():
+  if doorbell_detector_instance.is_ringing():
     print('the doorbell is ringing')
 
 

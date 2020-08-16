@@ -116,7 +116,7 @@ class AiPhoneGT1A(DoorbellDetector):
   def _iter_confidences(self):
     for _ in self.audio_stream.read_iter():
       self.audio_pitch.process_data()
-      yield self.audio_pitch.fetch_confidence()
+      yield self.audio_pitch.confidence
   
   def _detect_single_ring(self, max_wait_seconds_multiple=None):
     """
