@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import deque
+import logging
 import time
 
 from lib.audio import Pitch
@@ -13,7 +14,21 @@ class DoorbellDetector(ABC):
   
   def __init__(self, *, audio_stream):
     self.audio_stream = audio_stream
-  
+
+  def __str__(self):
+    return (
+      '{}(\n'
+        '\taudio_stream={}\n'
+      ')'
+      ''.format(
+        DoorbellDetector.__name__,
+        self.audio_stream,
+      )
+    )
+
+  def __repr__(self):
+    return self.__str__()
+
   @abstractmethod
   def is_ringing(self):
     """
@@ -90,12 +105,31 @@ class AiPhoneGT1A(DoorbellDetector):
     self.audio_pitch = Pitch(
       audio_stream=self.audio_stream,
     )
-  
+
+  def __str__(self):
+    return (
+      '{}(\n'
+        '\taudio_stream={}\n'
+      ')'
+      ''.format(
+        AiPhoneGT1A.__name__,
+        self.audio_stream,
+      )
+    )
+
+  def __repr__(self):
+    return self.__str__()
+
   def is_ringing(self):
     with self.audio_stream:
+      logging.debug('opened audio stream of {}'.format(self.audio_stream))
       with self.audio_pitch:
+        logging.debug('opened audio pitch of {}'.format(self.audio_pitch))
         while not self.audio_stream.is_depleted:
+          logging.debug('iterated audio stream of {}'.format(self.audio_stream))
           if self._is_ringing():
+            logging.debug('THE RING HAS BEEN DETECTED')
+            logging.debug('audio_stream={}'.format(self.audio_stream))
             return True
           
     return False
@@ -114,7 +148,7 @@ class AiPhoneGT1A(DoorbellDetector):
     )
   
   def _iter_confidences(self):
-    for _ in self.audio_stream.read_iter():
+    for _ in self.audio_stream.iter_read():
       self.audio_pitch.process_data()
       yield self.audio_pitch.confidence
   
@@ -148,11 +182,36 @@ class AiPhoneGT1A(DoorbellDetector):
       dq.append(pitch_confidence)
       avg_confidence = sum(dq) / num_confidences_to_average
       if self.min_ringing_confidence <= avg_confidence <= self.max_ringing_confidence:
-        return True
+        logging.debug(
+          "RING RING for _detect_single_ring(max_wait_seconds_multiple={})"
+          ''.format(max_wait_seconds_multiple)
+        )
+        ret = True
+        break
       if max_wait_time and (time.time() >= max_wait_time):
-        return False
-  
-    return False
+        logging.debug(
+          "_detect_single_ring(max_wait_seconds_multiple={}) timed out at {}"
+          ''.format(
+            max_wait_seconds_multiple,
+            time.time(),
+          )
+        )
+        ret = False
+        break
+    else:
+      logging.debug(
+        "_detect_single_ring(max_wait_seconds_multiple={}) stream ended at {}"
+        ''.format(
+          max_wait_seconds_multiple,
+          time.time(),
+        )
+      )
+      ret = False
+
+    logging.debug(self.audio_stream)
+    logging.debug(self.audio_pitch)
+    
+    return ret
   
   def _detect_single_gap(self, max_wait_seconds_multiple=None):
     """
@@ -186,8 +245,33 @@ class AiPhoneGT1A(DoorbellDetector):
       dq.append(pitch_confidence)
       avg_confidence = sum(dq) / num_confidences_to_average
       if not (self.min_ringing_confidence <= avg_confidence <= self.max_ringing_confidence):
-        return True
+        logging.debug(
+          "GAP GAP for _detect_single_gap(max_wait_seconds_multiple={})"
+          ''.format(max_wait_seconds_multiple)
+        )
+        ret = True
+        break
       if max_wait_time and (time.time() >= max_wait_time):
-        return False
-  
-    return False
+        logging.debug(
+          "_detect_single_gap(max_wait_seconds_multiple={}) timed out at {}"
+          ''.format(
+            max_wait_seconds_multiple,
+            time.time()
+          )
+        )
+        ret = False
+        break
+    else:
+      logging.debug(
+        "_detect_single_gap(max_wait_seconds_multiple={}) stream ended at {}"
+        ''.format(
+          max_wait_seconds_multiple,
+          time.time()
+        )
+      )
+      ret = False
+
+    logging.debug(self.audio_stream)
+    logging.debug(self.audio_pitch)
+
+    return ret

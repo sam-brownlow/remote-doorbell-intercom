@@ -33,11 +33,30 @@ class Stream(ABC):
     self._data = None
     self._num_blocks_read = 0
 
+  def __str__(self):
+    return (
+      '{}(\n'
+        '\tsample_rate={},\n'
+        '\tblock_size={},\n'
+        '\tnum_channels={},\n'
+      ')._num_blocks_read={}'
+      ''.format(
+        Stream.__name__,
+        self.sample_rate,
+        self.block_size,
+        self.num_channels,
+        self._num_blocks_read,
+      )
+    )
+
+  def __repr__(self):
+    return self.__str__()
+
   def __enter__(self):
     self.open()
     return self
 
-  def __exit__(self):
+  def __exit__(self, *args, **kwargs):
     self.close()
 
   @abstractmethod
@@ -105,7 +124,7 @@ class Stream(ABC):
 
   def iter_read(self):
     while True:
-      if self.is_depleted():
+      if self.is_depleted:
         break
       yield self.read()
   
@@ -126,7 +145,23 @@ class Microphone(Stream):
   def __init__(self, *args, dtype='float32', **kwargs):
     super().__init__(*args, **kwargs)
     self.dtype = dtype
-  
+
+  def __str__(self):
+    return (
+      '{}(\n'
+        '\t{},\n'
+        '\tdtype={},\n'
+      ')'
+      ''.format(
+        Microphone.__name__,
+        super().__str__().replace('\t', '\t\t'),
+        self.dtype,
+      )
+    )
+
+  def __repr__(self):
+    return self.__str__()
+
   def _open(self):
     stream = sounddevice.InputStream(
       samplerate=self.sample_rate,
@@ -163,7 +198,24 @@ class File(Stream):
     super().__init__(*args, **kwargs)
     self.file_path = file_path
     self._last_read_size = None
-  
+
+  def __str__(self):
+    return (
+      '{}(\n'
+        '\t{},\n'
+        "\tfile_path='{}',\n"
+      ')._last_read_size={}'
+      ''.format(
+        File.__name__,
+        super().__str__().replace('\t', '\t\t'),
+        self.file_path,
+        self._last_read_size,
+      )
+    )
+
+  def __repr__(self):
+    return self.__str__()
+
   def _open(self):
     self._stream = aubio.source(
       self.file_path,
@@ -203,7 +255,30 @@ class Pitch:
 
     self._aubio_pitch = None
     self._cached_confidence = {}
-  
+
+  def __str__(self):
+    return (
+      '{}(\n'
+        '\taudio_stream={},\n'
+        "\tmodel='{}',\n"
+        '\ttolerance={},\n'
+        '\tblock_size_multiple={}\n'
+      ')._aubio_pitch=<{}>,\n'
+      '._cached_confidence={},\n'
+      ''.format(
+        Pitch.__name__,
+        self.audio_stream,
+        self.model,
+        self.tolerance,
+        self.block_size_multiple,
+        type(self._aubio_pitch),
+        self._cached_confidence,
+      )
+    )
+
+  def __repr__(self):
+    return self.__str__()
+
   @AssertContextFunc(does_set=True, attribute='_aubio_pitch')
   def open(self):
     self._aubio_pitch = aubio.pitch(
@@ -222,7 +297,7 @@ class Pitch:
   def close(self):
     self._aubio_pitch = None
   
-  def __exit__(self):
+  def __exit__(self, *args, **kwargs):
     self.close()
   
   def process_data(self):
@@ -264,7 +339,6 @@ def _aubio_demos_in_path():
     if needs_update:
       sys.path.remove(aubio_demos_path)
 
-# plot_audio_file_pitch_confidence('/Users/sam/Desktop/buzz-cut.wav', 44100)
 def plot_audio_file_pitch_confidence(file_path, sample_rate):
   """
     Uses matplotlib, via aubio's `demo_pitch.py`,
