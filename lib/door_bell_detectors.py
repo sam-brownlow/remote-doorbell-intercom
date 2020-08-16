@@ -16,6 +16,12 @@ class DoorbellDetector(ABC):
   
   @abstractmethod
   def is_ringing(self):
+    """
+      Iterate over the audio stream until ringing is detected
+    
+      :return: True when the ringing is detected
+               or False if the stream ends before a ring is detected
+    """
     pass
 
 

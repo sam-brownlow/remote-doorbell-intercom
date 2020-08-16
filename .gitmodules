@@ -1,0 +1,3 @@
+[submodule "submodules/aubio"]
+	path = submodules/aubio
+	url = git://github.com/aubio/aubio.git

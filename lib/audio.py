@@ -7,6 +7,10 @@ from lib.utils import AssertContextFunc
 
 
 class Stream(ABC):
+  """
+    An abstract class that streams blocks of audio data
+  """
+  
   def __init__(
     self,
     *,
@@ -22,12 +26,53 @@ class Stream(ABC):
     self._data = None
     self._num_blocks_read = 0
 
+  def __enter__(self):
+    self.open()
+    return self
+
+  def __exit__(self):
+    self.close()
+
+  @abstractmethod
+  def _open(self):
+    """
+      Open the stream and assign it to self._stream
+      :return: None
+    """
+    pass
+
+  @abstractmethod
+  def _close(self):
+    """
+      Close the stream and set self._stream to None
+      :return: None
+    """
+    pass
+
+  @abstractmethod
+  def _read(self):
+    """
+      :return: the next block of block of audio data
+    """
+    pass
+
+  @abstractmethod
+  def _is_depleted(self):
+    """
+      :return: True if the stream has ended
+               else return False
+    """
+    pass
+
   @property
   def stream(self):
     return self._stream
 
   @property
   def data(self):
+    """
+      :return: the last block of data returned from self.read()
+    """
     return self._data
 
   @property
@@ -37,33 +82,20 @@ class Stream(ABC):
   @property
   def num_seconds_read(self):
     raise Exception('need to calculate this from _num_blocks_read and the audio info')
-  
+
+  @property
+  def is_depleted(self):
+    return self._is_depleted()
+
   @AssertContextFunc(does_set=True, attribute='_stream')
   def open(self):
     self._open()
-
-  @abstractmethod
-  def _open(self):
-    # must assign self._stream
-    pass
-
-  def __enter__(self):
-    self.open()
-    return self
 
   @AssertContextFunc(sets_to_none=True, attribute='_stream')
   def close(self):
     self._close()
     self._data = None
 
-  @abstractmethod
-  def _close(self):
-    # must set self._stream to None
-    pass
-
-  def __exit__(self):
-    self.close()
-  
   def iter_read(self):
     while True:
       if self.is_depleted():
@@ -75,20 +107,15 @@ class Stream(ABC):
     self._num_blocks_read += 1
     return self._data
   
-  @abstractmethod
-  def _read(self):
-    pass
-
-  @abstractmethod
-  def _is_depleted(self):
-    pass
-
-  @property
-  def is_depleted(self):
-    return self._is_depleted()
-
 
 class Microphone(Stream):
+  """
+    A live microphone stream
+    
+    todo: this class could be improved to handle input selection;
+           it currently defaults to the system
+  """
+  
   def __init__(self, *args, dtype='float32', **kwargs):
     super().__init__(*args, **kwargs)
     self.dtype = dtype
@@ -100,12 +127,7 @@ class Microphone(Stream):
       channels=self.num_channels,
       dtype=self.dtype,
     )
-    
-    try:
-      stream.start()
-    except Exception:
-      stream.close()
-      raise
+    stream.start()
     
     self._stream = stream
   
@@ -126,6 +148,10 @@ class Microphone(Stream):
 
 
 class File(Stream):
+  """
+    Audio streamed from a file
+  """
+  
   def __init__(self, *args, file_path, **kwargs):
     super().__init__(*args, **kwargs)
     self.file_path = file_path
