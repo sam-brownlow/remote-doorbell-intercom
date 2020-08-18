@@ -1,5 +1,5 @@
-# remote-aiphone
-A library for remotely interacting with an Aiphone intercom system
+# remote-doorbell-intercom
+A library for remotely interacting with an intercom doorbell system 
 
 Must be run from a linux OS (switchbot requires the appropriate bluetooth library, which is unavailable on Mac OS).
 
