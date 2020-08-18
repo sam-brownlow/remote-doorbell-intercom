@@ -15,7 +15,7 @@ class DoorbellDetector(ABC):
   def __init__(self, *, audio_stream):
     self.audio_stream = audio_stream
 
-  def __str__(self):
+  def __repr__(self):
     return (
       '{}(\n'
         '\taudio_stream={}\n'
@@ -25,9 +25,6 @@ class DoorbellDetector(ABC):
         self.audio_stream,
       )
     )
-
-  def __repr__(self):
-    return self.__str__()
 
   @abstractmethod
   def is_ringing(self):
@@ -106,7 +103,7 @@ class AiPhoneGT1A(DoorbellDetector):
       audio_stream=self.audio_stream,
     )
 
-  def __str__(self):
+  def __repr__(self):
     return (
       '{}(\n'
         '\t{},\n'
@@ -132,9 +129,6 @@ class AiPhoneGT1A(DoorbellDetector):
         self.max_wait_subsequent_ring_multiple,
       )
     )
-
-  def __repr__(self):
-    return self.__str__()
 
   def is_ringing(self):
     with self.audio_stream:

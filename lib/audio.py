@@ -32,13 +32,13 @@ class Stream(ABC):
     self._stream = None
     self._data = None
     self._num_blocks_read = 0
-
-  def __str__(self):
+  
+  def __repr__(self):
     return (
       '{}(\n'
         '\tsample_rate={},\n'
         '\tblock_size={},\n'
-        '\tnum_channels={},\n'
+        '\tnum_channels={}\n'
       ')._num_blocks_read={}'
       ''.format(
         Stream.__name__,
@@ -48,9 +48,6 @@ class Stream(ABC):
         self._num_blocks_read,
       )
     )
-
-  def __repr__(self):
-    return self.__str__()
 
   def __enter__(self):
     self.open()
@@ -104,10 +101,11 @@ class Stream(ABC):
   @property
   def num_blocks_read(self):
     return self._num_blocks_read
-
+  
   @property
   def num_seconds_read(self):
-    raise Exception('need to calculate this from _num_blocks_read and the audio info')
+    num_samples_read = self.block_size * self._num_blocks_read
+    return num_samples_read / self.sample_rate
 
   @property
   def is_depleted(self):
@@ -146,7 +144,7 @@ class Microphone(Stream):
     super().__init__(*args, **kwargs)
     self.dtype = dtype
 
-  def __str__(self):
+  def __repr__(self):
     return (
       '{}(\n'
         '\t{},\n'
@@ -158,9 +156,6 @@ class Microphone(Stream):
         self.dtype,
       )
     )
-
-  def __repr__(self):
-    return self.__str__()
 
   def _open(self):
     stream = sounddevice.InputStream(
@@ -199,7 +194,7 @@ class File(Stream):
     self.file_path = file_path
     self._last_read_size = None
 
-  def __str__(self):
+  def __repr__(self):
     return (
       '{}(\n'
         '\t{},\n'
@@ -212,9 +207,6 @@ class File(Stream):
         self._last_read_size,
       )
     )
-
-  def __repr__(self):
-    return self.__str__()
 
   def _open(self):
     self._stream = aubio.source(
@@ -256,7 +248,7 @@ class Pitch:
     self._aubio_pitch = None
     self._cached_confidence = {}
 
-  def __str__(self):
+  def __repr__(self):
     return (
       '{}(\n'
         '\taudio_stream={},\n'
@@ -275,9 +267,6 @@ class Pitch:
         self._cached_confidence,
       )
     )
-
-  def __repr__(self):
-    return self.__str__()
 
   @AssertContextFunc(does_set=True, attribute='_aubio_pitch')
   def open(self):
